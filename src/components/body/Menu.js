@@ -18,7 +18,8 @@ class Menu extends Component {
                 <MenuItem
                     dish={item}
                     key={item.id}
-                    DishSelect={() => this.onDishSelect(item)} />
+                    DishSelect={() => this.onDishSelect(item)}
+                />
             );
         })
 
