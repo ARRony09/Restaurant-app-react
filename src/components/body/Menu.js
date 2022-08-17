@@ -1,19 +1,52 @@
 import React, { Component } from "react";
-import DISHES from '../../data/dishes.js';
 import MenuItem from "./MenuItem.js";
-import DishDetail from './DishDetail';
 
+import DishDetail from './DishDetail';
+import { Modal, ModalFooter, ModalBody, CardColumns, Button } from 'reactstrap'
+import { connect } from 'react-redux'
+
+
+const mapStateToProps = state => {
+    return {
+        dishes: state.dishes,
+        comments: state.comments
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        addcomment: (dishId, rating, author, comment) => dispatch({
+            type: 'ADD_COMMENT',
+            payload: {
+                dishId: dishId,
+                author: author,
+                rating: rating,
+                comment: comment
+            }
+        })
+    }
+}
 class Menu extends Component {
     state = {
-        dishes: DISHES,
-        selectedDish: null
+        selectedDish: null,
+        modalOpen: false
     }
 
     onDishSelect = dish => {
-        this.setState({ selectedDish: dish });
+        this.setState({
+            selectedDish: dish,
+            modalOpen: !this.state.modalOpen
+        });
     }
+    toggleOpen = () => {
+        this.setState({
+            modalOpen: !this.state.modalOpen
+        });
+    }
+
     render() {
-        const menu = this.state.dishes.map(item => {
+        document.title = 'Menu';
+        const menu = this.props.dishes.map(item => {
             return (
                 <MenuItem
                     dish={item}
@@ -25,21 +58,29 @@ class Menu extends Component {
 
         let dishDetail = null;
         if (this.state.selectedDish != null) {
-            dishDetail = <DishDetail dish={this.state.selectedDish} />
+            const comments = this.props.comments.filter(comment => comment.dishId === this.state.selectedDish.id)
+            dishDetail = <DishDetail dish={this.state.selectedDish}
+                comments={comments}
+                addComment={this.props.addcomment} />
         }
         return (
             <div className="container">
                 <div className="row">
-                    <div className="col-6">
+                    <CardColumns>
                         {menu}
-                    </div>
-                    <div className="col-6">
-                        {dishDetail}
-                    </div>
+                    </CardColumns>
+                    <Modal isOpen={this.state.modalOpen}>
+                        <ModalBody>
+                            {dishDetail}
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color='secondary' onClick={this.toggleOpen}>Close</Button>
+                        </ModalFooter>
+                    </Modal>
                 </div>
             </div>
         );
     }
 }
 
-export default Menu;
+export default connect(mapStateToProps, mapDispatchToProps)(Menu);
